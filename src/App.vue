@@ -1,39 +1,93 @@
 <template>
   <div id="app">
-    <div class="mapContainer" id="map"></div>
+    <Header />
+    <router-view />
+    <!-- <Map
+      :coords="state.currentCoords"
+      :maskData="state.maskData"
+      v-if="state.tab === 'map' && state.isLoaded"
+    /> -->
   </div>
 </template>
 
 <script>
-import * as L from 'leaflet'
-import { onMounted, reactive } from '@vue/composition-api'
+import { reactive, onMounted, computed } from '@vue/composition-api'
+import Header from '@/components/Header.vue'
 export default {
   name: 'app',
   components: {
+    Header
   },
-  setup (props, context) {
+  setup (props, { root }) {
     onMounted(async () => {
-      const { data } = await context.root.$http.get('https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json')
-      state.maskData = data.features
-      state.isLoaded = true
-      createMap()
+      root.$store.dispatch('getData')
+      // const { data } = await context.root.$http.get(
+      //   'https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json'
+      // )
+      // state.maskData = data
+      // state.currentCoords = await getCurrentGeoLocation()
+      // state.isLoaded = true
+      // state.filterData = data.features.filter(el => {
+      //   const { longitude, latitude } = state.currentCoords
+      //   return (
+      //     getDistance(
+      //       latitude,
+      //       longitude,
+      //       el.geometry.coordinates[1],
+      //       el.geometry.coordinates[0]
+      //     ) <= 1
+      //
+      // })
     })
-
     const state = reactive({
-      isLoaded: false,
-      maskData: null
+      tab: 'list',
+      filterData: null,
+      currentCoords: {},
+      isLoaded: false
     })
 
-    function createMap () {
-      var map = L.map('map').setView([-25.363, 131.044], 5)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '<a href="https://www.openstreetmap.org/">OSM</a>',
-        maxZoom: 18
-      }).addTo(map)
+    const maskData = computed(() => root.$store.state.maskData)
+
+    function getCurrentGeoLocation () {
+      return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            pos => {
+              resolve(pos.coords)
+            },
+            err => {
+              console.warn(`ERROR ${err.code}: ${err.message}`)
+              reject(err)
+            }
+          )
+        }
+      })
+    }
+
+    function getDistance (oLat, oLon, nLat, nLon) {
+      const R = 6371 // km
+      const dLat = toRad(nLat - oLat)
+      const dLon = toRad(nLon - nLon)
+      const lat1 = toRad(oLat)
+      const lat2 = toRad(nLat)
+
+      var a =
+        Math.pow(Math.sin(dLat / 2), 2) +
+        Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dLon / 2), 2)
+      var c = 2 * Math.asin(Math.sqrt(a))
+      return c * R
+    }
+
+    // Converts numeric degrees to radians
+    function toRad (Value) {
+      return (Value * Math.PI) / 180
     }
 
     return {
-      state
+      state,
+      maskData,
+      getCurrentGeoLocation,
+      getDistance
     }
   }
 }
@@ -41,12 +95,7 @@ export default {
 
 <style lang="scss">
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  color: #34495E;
+  font-size: 16px;
 }
-
 </style>

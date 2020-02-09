@@ -27,13 +27,17 @@
        </div>
      </div>
    </div>
+   <TopButton />
   </div>
 </template>
 
 <script>
 import { reactive, onMounted } from '@vue/composition-api'
+import TopButton from '@/components/TopButton'
 export default {
-
+  components: {
+    TopButton
+  },
   setup (props, context) {
     onMounted(() => {
       state.status = getDay()
@@ -56,6 +60,7 @@ export default {
 
 <style lang="scss" scoped>
   .list-page {
+    position: relative;
     padding: 20px;
   }
   .location-bar {

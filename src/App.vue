@@ -1,12 +1,19 @@
 <template>
   <div id="app">
     <Header />
-    <router-view />
+    <router-view class="container" />
     <!-- <Map
       :coords="state.currentCoords"
       :maskData="state.maskData"
       v-if="state.tab === 'map' && state.isLoaded"
     /> -->
+    <div class="footer">
+      <p>防疫專線 1922 ｜ 口罩資訊 1911</p>
+      <p class="copyright">
+        Design / PY Design<br>
+        Made / Cleo
+      </p>
+    </div>
   </div>
 </template>
 
@@ -95,7 +102,28 @@ export default {
 
 <style lang="scss">
 #app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   color: #34495E;
   font-size: 16px;
+}
+.container {
+  flex: 1 0 auto;
+}
+.footer {
+  padding: 16px 24px;
+  color: #fafafa;
+  line-height: 1.6;
+  background-color: #34495E;
+
+  > p {
+    margin: 0;
+  }
+  .copyright {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #566778;
+  }
 }
 </style>

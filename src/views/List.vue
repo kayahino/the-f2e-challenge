@@ -34,6 +34,10 @@
      <div v-for="item in dataFiltered" :key="item.properties.id">
        <ListCard :item="item"/>
      </div>
+     <div class="see-more" v-if="state.isMore">
+       <p>尚有 {{ state.remained }} 筆</p>
+       <div class="btn" @click="seeMore">查看更多</div>
+     </div>
    </div>
    <TopButton />
   </div>
@@ -54,7 +58,12 @@ export default {
       state.status = getDay()
     })
     const state = reactive({
-      status: '雙數'
+      status: '雙數',
+      page: 1,
+      max: 5,
+      range: 1,
+      isMore: false,
+      remained: 0
     })
 
     const maskData = computed(() => root.$store.state.maskData)
@@ -63,15 +72,27 @@ export default {
     const lastUpdatedTime = computed(() => root.$store.state.lastUpdated)
     const dataFiltered = ref([])
     watch(location, (prev, next) => {
-      dataFiltered.value = filter(1)
+      dataFiltered.value = filter(state.range, state.page)
     })
 
-    function filter (range) {
-      const filtered = root.$store.state.maskData.filter(el => {
+    function filter (range, page) {
+      const filteredAll = root.$store.state.maskData.filter(el => {
         const { longitude, latitude } = location.value
         return getDistance(latitude, longitude, el.geometry.coordinates[1], el.geometry.coordinates[0]) <= range
       })
-      return filtered
+      const filteredByPage = filteredAll.slice(0, page * state.max)
+      if (filteredByPage.length < filteredAll.length) {
+        state.isMore = true
+        state.remained = filteredAll.length - filteredByPage.length
+      } else {
+        state.isMore = false
+      }
+      return filteredByPage
+    }
+
+    function seeMore () {
+      state.page += 1
+      dataFiltered.value = filter(state.range, state.page)
     }
 
     function getDay () {
@@ -104,7 +125,8 @@ export default {
       maskData,
       dataFiltered,
       lastUpdatedTime,
-      isLoading
+      isLoading,
+      seeMore
     }
   },
   methods: {
@@ -222,6 +244,32 @@ export default {
       font-size: 14px;
       border: 2px solid #34495E;
       border-radius: 100px;
+    }
+  }
+
+  .mask-list {
+    margin-bottom: 80px;
+  }
+
+  .see-more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: -60px;
+    font-size: 12px;
+    color: #34495E;
+
+    .btn {
+      margin-top: 10px;
+      padding: 14px 45px;
+      color: #fafafa;
+      font-size: 14px;
+      letter-spacing: 0.75px;
+      background-color: #34495E;
+      box-shadow: 0 10px 20px #34495E4D;
+      border-radius: 100px;
+      cursor: pointer;
     }
   }
 </style>

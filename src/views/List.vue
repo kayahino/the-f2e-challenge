@@ -1,8 +1,8 @@
 <template>
   <div class="list-page">
     <div class="location-bar">
-      <p class="location">目前位置</p>
-      <div class="locate-btn">
+      <p class="location">目前位置 {{ location.latitude }}</p>
+      <div class="locate-btn" @click="getLocation">
         <img src="@/assets/img/ic_location.png" draggable="false">
       </div>
     </div>
@@ -18,13 +18,21 @@
     </div>
     <div class="info">
      <div>
-       距離方圓 5公里 以內的供應商 <br />
-       資訊更新時間 20:22:22
+       距離方圓 1 公里 以內的供應商 <br />
+       資訊更新時間 {{ lastUpdatedTime }}
      </div>
      <div class="refresh">
-       <div class="btn">
+       <div class="btn" @click="getData">
          重整列表
        </div>
+     </div>
+   </div>
+   <div class="loading" v-if="isLoading">
+     Loading...
+   </div>
+   <div class="mask-list" v-else>
+     <div v-for="item in dataFiltered" :key="item.properties.id">
+       <ListCard :item="item"/>
      </div>
    </div>
    <TopButton />
@@ -32,13 +40,16 @@
 </template>
 
 <script>
-import { reactive, onMounted } from '@vue/composition-api'
+import { reactive, onMounted, computed, watch, ref } from '@vue/composition-api'
+import { mapActions } from 'vuex'
 import TopButton from '@/components/TopButton'
+import ListCard from '@/components/ListCard'
 export default {
   components: {
-    TopButton
+    TopButton,
+    ListCard
   },
-  setup (props, context) {
+  setup (props, { root }) {
     onMounted(() => {
       state.status = getDay()
     })
@@ -46,14 +57,61 @@ export default {
       status: '雙數'
     })
 
+    const maskData = computed(() => root.$store.state.maskData)
+    const location = computed(() => root.$store.state.location)
+    const isLoading = computed(() => root.$store.state.isLoading)
+    const lastUpdatedTime = computed(() => root.$store.state.lastUpdated)
+    const dataFiltered = ref([])
+    watch(location, (prev, next) => {
+      dataFiltered.value = filter(1)
+    })
+
+    function filter (range) {
+      const filtered = root.$store.state.maskData.filter(el => {
+        const { longitude, latitude } = location.value
+        return getDistance(latitude, longitude, el.geometry.coordinates[1], el.geometry.coordinates[0]) <= range
+      })
+      return filtered
+    }
+
     function getDay () {
       const day = new Date().getDay()
       return day === 0 ? '雙數' : day % 2 !== 0 ? '奇數' : '偶數'
     }
 
-    return {
-      state
+    function getDistance (oLat, oLon, nLat, nLon) {
+      const R = 6371 // km
+      const dLat = toRad(nLat - oLat)
+      const dLon = toRad(nLon - nLon)
+      const lat1 = toRad(oLat)
+      const lat2 = toRad(nLat)
+
+      var a =
+        Math.pow(Math.sin(dLat / 2), 2) +
+        Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dLon / 2), 2)
+      var c = 2 * Math.asin(Math.sqrt(a))
+      return c * R
     }
+
+    // Converts numeric degrees to radians
+    function toRad (Value) {
+      return (Value * Math.PI) / 180
+    }
+
+    return {
+      state,
+      location,
+      maskData,
+      dataFiltered,
+      lastUpdatedTime,
+      isLoading
+    }
+  },
+  methods: {
+    ...mapActions([
+      'getLocation',
+      'getData'
+    ])
   }
 }
 </script>
@@ -61,7 +119,15 @@ export default {
 <style lang="scss" scoped>
   .list-page {
     position: relative;
+    display: flex;
+    flex-direction: column;
     padding: 20px;
+  }
+  .loading {
+    flex: 1 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .location-bar {
     display: flex;
@@ -141,6 +207,8 @@ export default {
     justify-content: space-between;
     align-items: center;
     margin-top: 25px;
+    margin-bottom: 20px;
+    padding-left: 10px;
     line-height: 1.8;
     font-size: 12px;
     color: #566778;

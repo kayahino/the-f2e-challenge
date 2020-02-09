@@ -1,5 +1,5 @@
 <template>
-  <div :class="['header', state.menuOpen ? 'isOpen' : '']">
+  <div :class="['header', state.menuOpen ? 'isOpen' : '']" ref="header">
     <div class="wrap">
       <div class="header__logo" @click="toIndex">
         <div class="logo">
@@ -13,29 +13,52 @@
       </div>
     </div>
     <div class="header__menu">
-      <div class="link">口罩供給現況</div>
-      <div class="link">口罩怎麼買</div>
+      <router-link :to="{ name: 'index' }" class="link">口罩供給現況</router-link>
+      <a javascript="void(0)" class="link" @click="$emit('popup')">口罩怎麼買</a>
     </div>
   </div>
 </template>
 
 <script>
-import { reactive } from '@vue/composition-api'
+import { reactive, onMounted, onUnmounted, ref } from '@vue/composition-api'
 export default {
-  setup (props, { root }) {
+  setup (props, context) {
+    onMounted(() => {
+      document.body.addEventListener('click', closeMenu)
+      window.addEventListener('scroll', menuHandler)
+    })
+
+    onUnmounted(() => {
+      document.body.removeEventListener('click', closeMenu)
+      window.removeEventListener('scroll', menuHandler)
+    })
+    const header = ref(null)
     const state = reactive({
       menuOpen: false
     })
 
     function toIndex () {
-      root.$router.push({ name: 'index' }).catch((err) => {
+      context.root.$router.push({ name: 'index' }).catch((err) => {
         console.log(err)
       })
     }
 
+    function closeMenu (e) {
+      if (!header.value.contains(e.target)) {
+        state.menuOpen = false
+      }
+    }
+
+    function menuHandler () {
+      if (!state.menuOpen) return false
+      state.menuOpen = false
+    }
+
     return {
       state,
-      toIndex
+      toIndex,
+      menuHandler,
+      header
     }
   }
 }
@@ -54,7 +77,7 @@ export default {
       padding: 20px;
       background-color: #fff;
       z-index: 99;
-      transition: background 0.3s linear;
+      transition: background 0.2s linear;
     }
   }
   .header__logo {
@@ -76,12 +99,15 @@ export default {
     right: 0;
     text-align: center;
     transform: translateY(-100%);
-    transition: transform 0.3s linear, background 0.3s linear;
+    transition: transform 0.2s linear, background 0.2s linear;
     cursor: pointer;
     // display: none;
 
     .link {
+      display: block;
       padding: 20px;
+      text-decoration: none;
+      color: #fff;
       &:hover {
         background-color: rgba(255, 255, 255, 0.1)
       }
@@ -121,7 +147,7 @@ export default {
       width: 26px;
       height: 4px;
       background-color: #34495E;
-      transition: all 0.3s linear;
+      transition: all 0.2s linear;
 
       &.top {
         margin-top: -4px;
@@ -144,7 +170,7 @@ export default {
       color: #fafafa;
       background-color: #34495E;
       transform: translateY(0);
-      transition: background 0.3s linear, transform 0.3s linear 0.2s;
+      transition: background 0.2s linear, transform 0.2s linear 0.2s;
     }
     .title {
       color: #fafafa;

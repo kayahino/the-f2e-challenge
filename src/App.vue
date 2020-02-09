@@ -1,12 +1,17 @@
 <template>
   <div id="app">
-    <Header />
+    <Header ref="header" @popup="state.popupOpen = true" />
     <router-view class="container" />
     <!-- <Map
       :coords="state.currentCoords"
       :maskData="state.maskData"
       v-if="state.tab === 'map' && state.isLoaded"
     /> -->
+    <transition name="slide" mode="out-in">
+      <div class="howToBuy" ref="popup" v-if="state.popupOpen && menuOpen">
+        <img src="@/assets/img/howToBuy.png" draggable="false">
+      </div>
+    </transition>
     <div class="footer">
       <p>防疫專線 1922 ｜ 口罩資訊 1911</p>
       <p class="copyright">
@@ -18,39 +23,31 @@
 </template>
 
 <script>
-import { reactive, onMounted, computed } from '@vue/composition-api'
+import { reactive, onMounted, computed, ref } from '@vue/composition-api'
 import Header from '@/components/Header.vue'
 export default {
   name: 'app',
   components: {
     Header
   },
-  setup (props, { root }) {
+  setup (props, { root, emit }) {
     onMounted(async () => {
       root.$store.dispatch('getData')
-      // const { data } = await context.root.$http.get(
-      //   'https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json'
-      // )
-      // state.maskData = data
-      // state.currentCoords = await getCurrentGeoLocation()
-      // state.isLoaded = true
-      // state.filterData = data.features.filter(el => {
-      //   const { longitude, latitude } = state.currentCoords
-      //   return (
-      //     getDistance(
-      //       latitude,
-      //       longitude,
-      //       el.geometry.coordinates[1],
-      //       el.geometry.coordinates[0]
-      //     ) <= 1
-      //
-      // })
+      // const headerH = document.querySelector('.header').offsetHeight
+      // popup.value.style = `top: ${headerH}px`
+    })
+    const header = ref(null)
+    const popup = ref(null)
+    const menuOpen = computed(() => {
+      if (!header.value.state.menuOpen) state.popupOpen = false
+      return header.value.state.menuOpen
     })
     const state = reactive({
       tab: 'list',
       filterData: null,
       currentCoords: {},
-      isLoaded: false
+      isLoaded: false,
+      popupOpen: false
     })
 
     const maskData = computed(() => root.$store.state.maskData)
@@ -94,7 +91,10 @@ export default {
       state,
       maskData,
       getCurrentGeoLocation,
-      getDistance
+      getDistance,
+      popup,
+      header,
+      menuOpen
     }
   }
 }
@@ -102,6 +102,7 @@ export default {
 
 <style lang="scss">
 #app {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -125,5 +126,31 @@ export default {
     font-size: 12px;
     color: #566778;
   }
+}
+
+.howToBuy {
+  position: absolute;
+  top: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #34495E;
+  // transform: translateX(100%);
+  z-index: 101;
+}
+
+.slide-enter,
+.slide-leave-to {
+  transform: translateX(100%);
+}
+
+.slide-enter-to,
+.slide-enter-leave {
+  transform: translateX(0);
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
 }
 </style>

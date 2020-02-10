@@ -9,12 +9,17 @@ const routes = [{
   redirect: { path: '/list' }
 },
 {
-  name: 'List',
+  name: 'list',
   path: '/list',
   component: () => import('@/views/List.vue')
 },
 {
-  name: 'Map',
+  name: 'search',
+  path: '/search',
+  component: () => import('@/views/Search.vue')
+},
+{
+  name: 'map',
   path: '/map',
   component: () => import('@/views/Map.vue')
 }

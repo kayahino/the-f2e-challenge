@@ -131,6 +131,8 @@ export default {
 .howToBuy {
   position: absolute;
   top: 64px;
+  width: 100%;
+  height: calc(100vh - 64px);
   display: flex;
   align-items: center;
   justify-content: center;

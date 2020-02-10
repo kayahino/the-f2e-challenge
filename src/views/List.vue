@@ -1,8 +1,10 @@
 <template>
   <div class="list-page">
-    <div class="location-bar">
-      <p class="location">目前位置 {{ location.latitude }}</p>
-      <div class="locate-btn" @click="getLocation">
+    <div class="location-bar" @click="$router.push({ name: 'search' })">
+      <p class="location" v-if="!userStatus">請選擇欲查找的區域</p>
+      <p class="location" v-else-if="userStatus === 'LOCATE_BY_LATLNG'">目前位置</p>
+      <p class="location" v-else>{{ userStatus }}</p>
+      <div class="locate-btn">
         <img src="@/assets/img/ic_location.png" draggable="false">
       </div>
     </div>
@@ -22,7 +24,7 @@
        資訊更新時間 {{ lastUpdatedTime }}
      </div>
      <div class="refresh">
-       <div class="btn" @click="getData">
+       <div :class="['btn', location.latitude ? '' : 'disabled']" @click="getData">
          重整列表
        </div>
      </div>
@@ -53,7 +55,7 @@ export default {
     TopButton,
     ListCard
   },
-  setup (props, { root }) {
+  setup (props, { root, emit }) {
     onMounted(() => {
       state.status = getDay()
     })
@@ -70,8 +72,10 @@ export default {
     const location = computed(() => root.$store.state.location)
     const isLoading = computed(() => root.$store.state.isLoading)
     const lastUpdatedTime = computed(() => root.$store.state.lastUpdated)
+    const userStatus = computed(() => root.$store.state.status)
     const dataFiltered = ref([])
     watch(location, (prev, next) => {
+      state.page = 1
       dataFiltered.value = filter(state.range, state.page)
     })
 
@@ -86,6 +90,7 @@ export default {
         state.remained = filteredAll.length - filteredByPage.length
       } else {
         state.isMore = false
+        state.remained = 0
       }
       return filteredByPage
     }
@@ -94,6 +99,12 @@ export default {
       state.page += 1
       dataFiltered.value = filter(state.range, state.page)
     }
+
+    // function toSearchPage () {
+    //   root.$router.push({ name: 'search' })
+    //   //  state.page = 1
+    //   //  root.$store.dispatch('getLocation')
+    // }
 
     function getDay () {
       const day = new Date().getDay()
@@ -122,6 +133,7 @@ export default {
     return {
       state,
       location,
+      userStatus,
       maskData,
       dataFiltered,
       lastUpdatedTime,
@@ -159,6 +171,7 @@ export default {
     border: 1px solid #34495E33;
     border-radius: 10px;
     background-color: #fff;
+    cursor: pointer;
   }
 
   .location {
@@ -167,7 +180,6 @@ export default {
   .locate-btn {
     width: 24px;
     height: 24px;
-    cursor: pointer;
     > img {
       max-width: 100%;
       height: auto;
@@ -244,6 +256,11 @@ export default {
       font-size: 14px;
       border: 2px solid #34495E;
       border-radius: 100px;
+
+      &.disabled {
+        opacity: 0.4;
+        pointer-events: none;
+      }
     }
   }
 

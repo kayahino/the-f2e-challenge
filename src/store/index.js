@@ -10,7 +10,8 @@ export default new Vuex.Store({
     maskData: [],
     location: {},
     lastUpdated: '',
-    isLoading: false
+    isLoading: false,
+    status: null
   },
   getters: {
     getMaskData: (state) => state.maskData
@@ -34,6 +35,7 @@ export default new Vuex.Store({
       commit('SET_LOADING', true)
       const location = await getCurrentGeoLocation()
       commit('SET_LOCATION', location)
+      // commit('SET_STATUS', 'LOCATE_BY_LATLNG')
       commit('SET_LOADING', false)
     }
   },
@@ -49,13 +51,16 @@ export default new Vuex.Store({
     },
     UPDATE_TIME: (state, payload) => {
       state.lastUpdated = payload
+    },
+    SET_STATUS: (state, payload) => {
+      state.status = payload
     }
   }
 })
 
 function getCurrentGeoLocation () {
   return new Promise((resolve, reject) => {
-    if (navigator.geolocation) {
+    if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         pos => {
           resolve(pos.coords)

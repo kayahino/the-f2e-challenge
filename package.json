@@ -11,6 +11,7 @@
     "@vue/composition-api": "^0.3.4",
     "axios": "^0.19.2",
     "core-js": "^3.4.4",
+    "google-maps-api-loader": "^1.1.1",
     "leaflet": "^1.6.0",
     "normalize.css": "^8.0.1",
     "vue": "^2.6.10",

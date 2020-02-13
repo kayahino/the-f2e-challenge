@@ -7,7 +7,7 @@
         </div>
         <div class="title">口罩即時查</div>
       </div>
-      <div class="menu__trigger" @click="state.menuOpen = !state.menuOpen">
+      <div class="menu__trigger" @click="state.menuOpen = !state.menuOpen" v-if="isMobile">
         <div class="dash top"></div>
         <div class="dash bottom"></div>
       </div>
@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import { reactive, onMounted, onUnmounted, ref } from '@vue/composition-api'
+import { reactive, onMounted, onUnmounted, ref, computed } from '@vue/composition-api'
 export default {
   setup (props, context) {
     onMounted(() => {
@@ -33,6 +33,8 @@ export default {
       window.removeEventListener('scroll', menuHandler)
     })
     const header = ref(null)
+    const isMobile = computed(() => context.root.$store.isMobile)
+
     const state = reactive({
       menuOpen: false
     })
@@ -56,6 +58,7 @@ export default {
 
     return {
       state,
+      isMobile,
       toIndex,
       menuHandler,
       header

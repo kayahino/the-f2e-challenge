@@ -11,17 +11,26 @@ const routes = [{
 {
   name: 'list',
   path: '/list',
-  component: () => import('@/views/List.vue')
+  component: () => import('@/views/List.vue'),
+  meta: {
+    keepAlive: true
+  }
 },
 {
   name: 'search',
   path: '/search',
-  component: () => import('@/views/Search.vue')
+  component: () => import('@/views/Search.vue'),
+  meta: {
+    keepAlive: false
+  }
 },
 {
   name: 'map',
   path: '/map',
-  component: () => import('@/views/Map.vue')
+  component: () => import('@/views/Map.vue'),
+  meta: {
+    keepAlive: false
+  }
 }
 ]
 

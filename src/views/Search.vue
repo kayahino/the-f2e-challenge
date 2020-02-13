@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { onMounted, ref, computed, reactive } from '@vue/composition-api'
+import { onMounted, ref, computed, reactive, onUnmounted } from '@vue/composition-api'
 import GoogleMapsApiLoader from 'google-maps-api-loader'
 let google
 let geocoder
@@ -51,6 +51,10 @@ export default {
       })
       geocoder = new google.maps.Geocoder()
       history.value = JSON.parse(localStorage.getItem('searchHistory')) || []
+      console.log('search mounted')
+    })
+    onUnmounted(() => {
+      console.log('search unmounted')
     })
     const coords = computed(() => context.root.$store.state.location)
     const address = ref(null)
@@ -131,6 +135,11 @@ export default {
 </script>
 
 <style lang="scss">
+  .search {
+    position: relative;
+    min-width: 320px;
+    max-width: 420px;
+  }
   .search__bar {
     display: flex;
     align-items: center;
@@ -237,9 +246,9 @@ export default {
   }
 
   .locate {
-    position: fixed;
+    position: absolute;
     right: 16px;
-    bottom: calc(24px + 103px);
+    bottom: 24px;
     display: flex;
     align-items: center;
     font-size: 12px;

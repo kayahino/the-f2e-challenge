@@ -7,8 +7,11 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   strict: true,
   state: {
+    isMobile: false,
     maskData: [],
+    dataCache: {},
     location: {},
+    // selectedPoint: null,
     lastUpdated: '',
     isLoading: false,
     status: null
@@ -25,7 +28,7 @@ export default new Vuex.Store({
       axios.get(url).then((res) => {
         const d = new Date()
         const time = `${d.getHours()}:${d.getMinutes()}:${d.getMilliseconds()}`
-        commit('GET_MASKDATA', res.data.features)
+        commit('GET_MASKDATA', res.data)
         commit('UPDATE_TIME', time)
         commit('SET_LOADING', false)
       })
@@ -37,7 +40,23 @@ export default new Vuex.Store({
       commit('SET_LOCATION', location)
       // commit('SET_STATUS', 'LOCATE_BY_LATLNG')
       commit('SET_LOADING', false)
+    },
+
+    setDataCache: ({ commit }, payload) => {
+      commit('SET_CACHE', payload)
+    },
+
+    checkIfMobile: ({ commit }, payload) => {
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
+        commit('SET_IS_MOBILE', true)
+      } else {
+        commit('SET_IS_MOBILE', false)
+      }
     }
+
+    // selectPoint: ({ commit }, payload) => {
+    //   commit('SET_POINT_MARKER', payload)
+    // }
   },
   mutations: {
     GET_MASKDATA: (state, payload) => {
@@ -54,7 +73,16 @@ export default new Vuex.Store({
     },
     SET_STATUS: (state, payload) => {
       state.status = payload
+    },
+    SET_CACHE: (state, payload) => {
+      state.dataCache = payload
+    },
+    SET_IS_MOBILE: (state, payload) => {
+      state.isMobile = payload
     }
+    // SET_POINT_MARKER: (state, payload) => {
+    //   state.selectedPoint = payload
+    // }
   }
 })
 

@@ -2,7 +2,7 @@
   <div class="list-page">
     <div class="location-bar" @click="$router.push({ name: 'search' })">
       <p class="location" v-if="!userStatus">請選擇欲查找的區域</p>
-      <p class="location" v-else-if="userStatus === 'LOCATE_BY_LATLNG'">目前位置</p>
+      <p class="location" v-else-if="userStatus === 'LOCATE_BY_LATLNG'">{{ location.latitude }} {{ location.longitude }}</p>
       <p class="location" v-else>{{ userStatus }}</p>
       <div class="locate-btn">
         <img src="@/assets/img/ic_location.png" draggable="false">
@@ -24,7 +24,7 @@
        資訊更新時間 {{ lastUpdatedTime }}
      </div>
      <div class="refresh">
-       <div :class="['btn', location.latitude ? '' : 'disabled']" @click="getData">
+       <div :class="['btn', dataFiltered ? '' : 'disabled']" @click="getData">
          重整列表
        </div>
      </div>
@@ -34,36 +34,42 @@
    </div>
    <div class="mask-list" v-else>
      <div v-for="item in dataFiltered" :key="item.properties.id">
-       <ListCard :item="item"/>
+       <ListCard :item="item" @showPosition="showPosition" />
      </div>
      <div class="see-more" v-if="state.isMore">
        <p>尚有 {{ state.remained }} 筆</p>
        <div class="btn" @click="seeMore">查看更多</div>
      </div>
    </div>
-   <TopButton />
+   <!-- <TopButton /> -->
   </div>
 </template>
 
 <script>
-import { reactive, onMounted, computed, watch, ref } from '@vue/composition-api'
+import { reactive, onMounted, computed, watch, ref, onBeforeUnmount } from '@vue/composition-api'
+import getDistance from '@/utils/getDistance.js'
 import { mapActions } from 'vuex'
-import TopButton from '@/components/TopButton'
+import { EventBus } from '@/utils/event-bus.js'
+// import TopButton from '@/components/TopButton'
 import ListCard from '@/components/ListCard'
+
 export default {
   components: {
-    TopButton,
+    // TopButton,
     ListCard
   },
   setup (props, { root, emit }) {
     onMounted(() => {
       state.status = getDay()
     })
+    onBeforeUnmount(() => {
+      console.log('unmounted')
+    })
     const state = reactive({
       status: '雙數',
       page: 1,
-      max: 5,
-      range: 1,
+      max: 10,
+      range: 2,
       isMore: false,
       remained: 0
     })
@@ -73,18 +79,23 @@ export default {
     const isLoading = computed(() => root.$store.state.isLoading)
     const lastUpdatedTime = computed(() => root.$store.state.lastUpdated)
     const userStatus = computed(() => root.$store.state.status)
-    const dataFiltered = ref([])
+    // const dataCache = computed(() => root.$store.state.dataCache)
+    const dataFiltered = ref(null)
     watch(location, (prev, next) => {
-      state.page = 1
-      dataFiltered.value = filter(state.range, state.page)
+      console.log('location changed')
+      if (location.value.latitude) {
+        state.page = 1
+        dataFiltered.value = filter(state.range, state.page)
+      }
     })
 
     function filter (range, page) {
-      const filteredAll = root.$store.state.maskData.filter(el => {
+      const filteredAll = maskData.value.features.filter(el => {
         const { longitude, latitude } = location.value
         return getDistance(latitude, longitude, el.geometry.coordinates[1], el.geometry.coordinates[0]) <= range
       })
-      const filteredByPage = filteredAll.slice(0, page * state.max)
+      const dataSorted = sortData(filteredAll, 'stock')
+      const filteredByPage = dataSorted.slice(0, page * state.max)
       if (filteredByPage.length < filteredAll.length) {
         state.isMore = true
         state.remained = filteredAll.length - filteredByPage.length
@@ -93,6 +104,30 @@ export default {
         state.remained = 0
       }
       return filteredByPage
+    }
+
+    function sortData (rawData, pattern) {
+      const sortPattern = {
+        distance: sortByDistance,
+        stock: sortByStock
+      }
+      const [...newData] = rawData
+      return sortPattern[pattern](newData)
+    }
+
+    function sortByStock (data) {
+      return data.sort((a, b) => {
+        return a.properties.mask_adult < b.properties.mask_adult ? 1 : -1
+      })
+    }
+
+    function sortByDistance (data) {
+      const { longitude, latitude } = location.value
+      return data.sort((a, b) => {
+        const aD = getDistance(latitude, longitude, a.geometry.coordinates[1], a.geometry.coordinates[0])
+        const bD = getDistance(latitude, longitude, b.geometry.coordinates[1], b.geometry.coordinates[0])
+        return aD > bD ? 1 : -1
+      })
     }
 
     function seeMore () {
@@ -111,23 +146,8 @@ export default {
       return day === 0 ? '雙數' : day % 2 !== 0 ? '奇數' : '偶數'
     }
 
-    function getDistance (oLat, oLon, nLat, nLon) {
-      const R = 6371 // km
-      const dLat = toRad(nLat - oLat)
-      const dLon = toRad(nLon - nLon)
-      const lat1 = toRad(oLat)
-      const lat2 = toRad(nLat)
-
-      var a =
-        Math.pow(Math.sin(dLat / 2), 2) +
-        Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dLon / 2), 2)
-      var c = 2 * Math.asin(Math.sqrt(a))
-      return c * R
-    }
-
-    // Converts numeric degrees to radians
-    function toRad (Value) {
-      return (Value * Math.PI) / 180
+    function showPosition (id, location) {
+      EventBus.$emit('showPos', id, location)
     }
 
     return {
@@ -138,13 +158,15 @@ export default {
       dataFiltered,
       lastUpdatedTime,
       isLoading,
-      seeMore
+      seeMore,
+      showPosition
     }
   },
   methods: {
     ...mapActions([
       'getLocation',
-      'getData'
+      'getData',
+      'setDataCache'
     ])
   }
 }
@@ -155,7 +177,14 @@ export default {
     position: relative;
     display: flex;
     flex-direction: column;
+    min-width: 320px;
+    max-width: 420px;
     padding: 20px;
+
+    // @media only screen and (min-height: 600px) {
+    //   max-height: calc(100vh - 60px - 103px);
+    //   overflow-y: auto;
+    // }
   }
   .loading {
     flex: 1 0 auto;
@@ -205,11 +234,6 @@ export default {
       position: relative;
       width: 100%;
       margin-left: 5px;
-      cursor: pointer;
-
-      &:hover > .tooltip, &:active > .tooltip {
-        display: block;
-      }
 
       .icon {
         width: 24px;
@@ -220,6 +244,11 @@ export default {
         text-align: center;
         line-height: 24px;
         font-weight: bold;
+        cursor: pointer;
+
+        &:hover ~ .tooltip, &:active ~ .tooltip {
+          display: block;
+        }
       }
 
       .tooltip {
@@ -251,11 +280,17 @@ export default {
   .refresh {
     cursor: pointer;
     .btn {
-      padding: 8px 20px;
+      padding: 5px 20px;
       color: #34495E;
       font-size: 14px;
       border: 2px solid #34495E;
       border-radius: 100px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: #fff;
+        background-color: #34495E;
+      }
 
       &.disabled {
         opacity: 0.4;

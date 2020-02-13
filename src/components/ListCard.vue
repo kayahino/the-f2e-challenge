@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="card" @click="clickHandler">
     <div class="card__stock">
       <div :class="['stock', item.properties.mask_adult > 100 ? 'green' : item.properties.mask_adult > 0? 'orange' : 'gray']">
         <div class="title">成人口罩數量</div>
@@ -12,7 +12,7 @@
     </div>
     <div class="card__storeInfo">
       <div class="store-name">
-        <div>{{ item.properties.name }} <span class="distance">{{ distance }} km</span></div>
+        <div>{{ item.properties.name }} <span class="distance">{{ distance.toFixed(2) }} km</span></div>
       </div>
       <div class="store-info">
         <div class="title">地址</div>
@@ -24,29 +24,28 @@
       <div class="store-info">
         <div class="title">電話</div>
         <div>{{ item.properties.phone }}</div>
-        <div class="tool" v-if="isMobile">
+        <div class="tool">
           <a :href="`tel:${item.properties.phone}`">撥打電話</a>
         </div>
       </div>
+      {{ item.geometry.coordinates[1] }} {{ item.geometry.coordinates[0] }}
     </div>
   </div>
 </template>
 
 <script>
 import { computed, ref, onMounted } from '@vue/composition-api'
+import getDistance from '@/utils/getDistance.js'
 export default {
   props: {
     item: {
       required: true
     }
   },
-  setup (props, { root }) {
+  setup (props, { root, emit }) {
     onMounted(() => {
-      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
-        isMobile.value = true
-      }
     })
-    const isMobile = ref(false)
+    const isMobile = computed(() => root.$store.state.isMobile)
     const location = computed(() => root.$store.state.location)
     const distance = ref(getDistance(location.value.latitude, location.value.longitude, props.item.geometry.coordinates[1], props.item.geometry.coordinates[0]))
 
@@ -55,23 +54,10 @@ export default {
       return `${baseURL}${latitude},${longitude}`
     }
 
-    function getDistance (oLat, oLon, nLat, nLon) {
-      const R = 6371 // km
-      const dLat = toRad(nLat - oLat)
-      const dLon = toRad(nLon - nLon)
-      const lat1 = toRad(oLat)
-      const lat2 = toRad(nLat)
-
-      var a =
-        Math.pow(Math.sin(dLat / 2), 2) +
-        Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dLon / 2), 2)
-      var c = 2 * Math.asin(Math.sqrt(a))
-      return (c * R).toFixed(1)
-    }
-
-    // Converts numeric degrees to radians
-    function toRad (Value) {
-      return (Value * Math.PI) / 180
+    function clickHandler (e) {
+      const { coordinates } = props.item.geometry
+      if (isMobile.value) return false
+      emit('showPosition', props.item.properties.id, { lat: coordinates[1], lng: coordinates[0] })
     }
 
     return {
@@ -79,7 +65,8 @@ export default {
       location,
       isMobile,
       distance,
-      seeOnMap
+      seeOnMap,
+      clickHandler
     }
   }
 }
@@ -93,6 +80,7 @@ export default {
     background-color: #fff;
     box-shadow: 0 3px 10px #0000001A;
     line-height: 1.6;
+    cursor: pointer;
   }
   .card__stock {
     display: flex;

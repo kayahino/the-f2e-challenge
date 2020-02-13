@@ -11,14 +11,14 @@
 </template>
 
 <script>
-import { reactive, onMounted, onUnmounted } from '@vue/composition-api'
+import { reactive, onMounted, onBeforeUnmount, computed } from '@vue/composition-api'
 export default {
   setup (props, context) {
     onMounted(() => {
       pinButton()
       window.addEventListener('scroll', scrollHandler)
     })
-    onUnmounted(() => {
+    onBeforeUnmount(() => {
       window.removeEventListener('scroll', scrollHandler)
     })
 
@@ -26,6 +26,8 @@ export default {
       isPin: false,
       isShow: false
     })
+
+    const isMobile = computed(() => context.root.$store.state.isMobile)
 
     function scrollHandler () {
       if (window.pageYOffset > 100) {
@@ -57,7 +59,8 @@ export default {
 
     return {
       state,
-      scrollToTop
+      scrollToTop,
+      isMobile
     }
   }
 }
@@ -79,6 +82,7 @@ export default {
     background-color: #34495E;
     box-shadow: 0 10px 20px #34495E4D;
     cursor: pointer;
+    z-index: 99;
 
     &.sticky {
       position: absolute;

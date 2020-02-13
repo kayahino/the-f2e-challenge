@@ -1,19 +1,16 @@
 <template>
-  <div id="map">
+  <div class="wrapper">
+    <List />
     <MaskMap
       ref="map"
-      :coords="coords"
-      :maskData="maskData"
     />
-    <div>
-      <button @click="flyTo">get current position</button>
-    </div>
   </div>
 </template>
 
 <script>
 import { reactive, ref, onMounted } from '@vue/composition-api'
 import MaskMap from '@/components/Map'
+import List from '@/views/List'
 export default {
   name: 'view-map',
   props: [
@@ -21,7 +18,8 @@ export default {
     'maskData'
   ],
   components: {
-    MaskMap
+    MaskMap,
+    List
   },
   setup (props, context) {
     onMounted(() => {
@@ -44,17 +42,8 @@ export default {
 }
 </script>
 
-<style lang="scss">
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-#map-container {
-  height: 400px;
-}
+<style lang="scss" scoped>
+  .wrapper {
+    display: flex;
+  }
 </style>

@@ -1,6 +1,7 @@
 import 'leaflet/dist/leaflet.css'
 import $L from 'leaflet'
 import icon from '@/assets/img/location.svg'
+import convert from './convert-data'
 
 const geojsonMarkerOptions = {
   radius: 8,
@@ -23,7 +24,6 @@ const locationIcon = $L.icon({
 
 const createMap = (divId, options) => {
   let map = $L.map(divId, options)
-  console.log(map)
   return map
 }
 
@@ -34,19 +34,29 @@ const createTileLayer = async (map, url, options) => {
 }
 
 const pinMark = (map, data) => {
-  $L
-    .geoJSON(data, {
-      pointToLayer: (feature, latlng) => {
-        return $L.circleMarker(latlng, geojsonMarkerOptions)
-      },
-      onEachFeature: (feature, layer) => {
-        layer.bindPopup(feature.properties.name)
-        layer.storeID = feature.properties.id
-      }
-    })
-    .addTo(map)
+  return new Promise((resolve, reject) => {
+    $L
+      .geoJSON(data, {
+        pointToLayer: (feature, latlng) => {
+          return $L.circleMarker(latlng, geojsonMarkerOptions)
+        },
+        onEachFeature: (feature, layer) => {
+          const tableData = convert.convert(feature.properties.available)
+          const template = convert.tableTemplate(tableData)
+          layer.bindPopup(`
+          <h3 class="popup__title">${feature.properties.name}</h3>
+          ${template}
+          <div class="popup__note">
+            <div>備註</div><div>${feature.properties.note.length === 0 ? '無' : feature.properties.note}</div>
+          </div>
+        `)
+          layer.storeID = feature.properties.id
+        }
+      })
+      .addTo(map)
+    resolve()
+  })
 }
-
 const showDistanceRange = (map, latlng) => {
   const circle = $L.circleMarker(latlng, {
     color: 'red',
@@ -64,6 +74,26 @@ const setPosMarker = (map, latlng) => {
 
 // const getBounds = (c1, c2) => {
 //   return $L.latLngBounds(c1, c2)
+// }
+
+// function dataToTable (dataString) {
+//   const dataAry = dataString.split('、')
+//   const dataTable = {
+//     morning: [],
+//     afternoon: [],
+//     evening: []
+//   }
+//   dataAry.forEach(el => {
+//     if (el.includes('上午')) {
+//       dataTable.morning.push(el.split('上午')[0])
+//     } else if (el.includes('下午')) {
+//       dataTable.afternoon.push(el.split('下午')[0])
+//     } else {
+//       dataTable.evening.push(el.split('晚上')[0])
+//     }
+//   })
+
+//   return dataTable
 // }
 
 export default {

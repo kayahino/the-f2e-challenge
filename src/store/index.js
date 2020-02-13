@@ -38,7 +38,7 @@ export default new Vuex.Store({
       commit('SET_LOADING', true)
       const location = await getCurrentGeoLocation()
       commit('SET_LOCATION', location)
-      // commit('SET_STATUS', 'LOCATE_BY_LATLNG')
+      commit('SET_STATUS', 'LOCATE_BY_LATLNG')
       commit('SET_LOADING', false)
     },
 

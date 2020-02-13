@@ -42,20 +42,17 @@ export default {
         minZoom: 8,
         maxZoom: 18
       })
-      console.log(map.getCenter())
       // map.setView(, zoom)
       // showRange()
     }
 
-    watch(coords, (prev, next) => {
+    watch(coords, async (prev, next) => {
       if (map && coords.value.latitude) {
         const { latitude, longitude } = coords.value
-        flyToCurrentPos()
-        console.log(map.getCenter(), coords.value)
         root.$utils.map.pinMark(map, maskData.value)
+        flyToCurrentPos()
         if (!marker) {
           marker = root.$utils.map.setPosMarker(map, coords.value)
-          marker.bindPopup('<b>Hello world!</b><br>I am a popup.').openPopup()
         } else {
           marker.setLatLng({ lat: latitude, lng: longitude })
         }
@@ -107,5 +104,15 @@ export default {
 
 #map-container {
   height: 100%;
+}
+
+.popup__title {
+  text-align: center;
+}
+
+.leaflet-popup-content {
+  > .popup__title {
+    text-align: center;
+  }
 }
 </style>

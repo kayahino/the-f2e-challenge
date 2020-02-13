@@ -16,19 +16,18 @@
       </div>
       <div class="store-info">
         <div class="title">地址</div>
-        <div>{{ item.properties.address }}</div>
+        <div class="content">{{ item.properties.address }}</div>
         <div class="tool">
           <a :href="`http://maps.google.com/?q=${item.properties.name}`" target="_blank">於地圖查看</a>
         </div>
       </div>
       <div class="store-info">
         <div class="title">電話</div>
-        <div>{{ item.properties.phone }}</div>
+        <div class="content">{{ item.properties.phone }}</div>
         <div class="tool">
           <a :href="`tel:${item.properties.phone}`">撥打電話</a>
         </div>
       </div>
-      {{ item.geometry.coordinates[1] }} {{ item.geometry.coordinates[0] }}
     </div>
   </div>
 </template>
@@ -162,13 +161,21 @@ export default {
       color: #566778;
 
       .title {
+        flex: 0 0 10%;
+        margin-right: 10px;
         color: #34495E;
+        white-space: nowrap;
+      }
+
+      .content {
         margin-right: 10px;
       }
 
       .tool {
+        flex: 0 0 10%;
         margin-left: auto;
         font-size: 12px;
+        white-space: nowrap;
 
         > a{
           color: #566778;

@@ -7,14 +7,14 @@
         </div>
         <div class="title">口罩即時查</div>
       </div>
-      <div class="menu__trigger" @click="state.menuOpen = !state.menuOpen" v-if="isMobile">
+      <div class="menu__trigger" @click="state.menuOpen = !state.menuOpen">
         <div class="dash top"></div>
         <div class="dash bottom"></div>
       </div>
     </div>
     <div class="header__menu">
-      <router-link :to="{ name: 'index' }" class="link">口罩供給現況</router-link>
-      <a javascript="void(0)" class="link" @click="$emit('popup')">口罩怎麼買</a>
+      <router-link :to="{ name: 'index' }" class="link active">口罩供給現況</router-link>
+      <a href="#" class="link" @click.prevent="$emit('popup')">口罩怎麼買</a>
     </div>
   </div>
 </template>
@@ -97,25 +97,42 @@ export default {
 
   .header__menu {
     position: absolute;
-    top: 100%;
+    top: 0;
     left: 0;
-    right: 0;
-    text-align: center;
-    transform: translateY(-100%);
-    transition: transform 0.2s linear, background 0.2s linear;
-    cursor: pointer;
-    // display: none;
+    width: 100%;
+    height: 100%;
+    padding-right: 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    z-index: 99;
 
     .link {
-      display: block;
-      padding: 20px;
+      align-self: stretch;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
       text-decoration: none;
-      color: #fff;
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.1)
+      color: #34495E;
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: #34495E;
+        border-radius: 4px 4px 0 0;
+        display: none;
+      }
+      &.active::after {
+        display: block;
       }
     }
   }
+
   .circle {
     position: relative;
     width: 20px;
@@ -144,6 +161,7 @@ export default {
     width: 26px;
     height: 24px;
     cursor: pointer;
+    display: none;
 
     .dash {
       position: absolute;
@@ -195,6 +213,38 @@ export default {
       width: 100%;
       background-color: #fafafa;
       transform: rotate(-45deg);
+    }
+  }
+    @media only screen and (max-width: 480px) {
+    .header__menu {
+      top: 100%;
+      left: 0;
+      right: 0;
+      display: block;
+      height: auto;
+      padding: 0;
+      text-align: center;
+      transform: translateY(-100%);
+      transition: transform 0.2s linear, background 0.2s linear;
+      cursor: pointer;
+      z-index: auto;
+      // display: none;
+
+      .link {
+        padding: 20px;
+        color: #fff;
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.1)
+        }
+
+        &.active::after {
+          display: none;
+        }
+      }
+    }
+
+    .menu__trigger {
+      display: flex;
     }
   }
 </style>

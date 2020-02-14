@@ -2,7 +2,7 @@
   <div class="list-page">
     <div class="location-bar" @click="$router.push({ name: 'search' })">
       <p class="location" v-if="!userStatus">請選擇欲查找的區域</p>
-      <p class="location" v-else-if="userStatus === 'LOCATE_BY_LATLNG'">{{ location.latitude }} {{ location.longitude }}</p>
+      <p class="location" v-else-if="userStatus === 'LOCATE_BY_LATLNG'">目前位置</p>
       <p class="location" v-else>{{ userStatus }}</p>
       <div class="locate-btn">
         <img src="@/assets/img/ic_location.png" draggable="false">
@@ -94,7 +94,7 @@ export default {
         const { longitude, latitude } = location.value
         return getDistance(latitude, longitude, el.geometry.coordinates[1], el.geometry.coordinates[0]) <= range
       })
-      const dataSorted = sortData(filteredAll, 'stock')
+      const dataSorted = sortData(filteredAll, 'distance')
       const filteredByPage = dataSorted.slice(0, page * state.max)
       if (filteredByPage.length < filteredAll.length) {
         state.isMore = true

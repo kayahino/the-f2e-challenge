@@ -106,6 +106,7 @@ export default {
     justify-content: flex-end;
     align-items: center;
     z-index: 99;
+    will-change: transform;
 
     .link {
       align-self: stretch;
@@ -162,6 +163,7 @@ export default {
     height: 24px;
     cursor: pointer;
     display: none;
+    will-change: transform;
 
     .dash {
       position: absolute;
@@ -224,7 +226,7 @@ export default {
       height: auto;
       padding: 0;
       text-align: center;
-      transform: translateY(-100%);
+      transform: translateY(-100%) translateZ(0);
       transition: transform 0.2s linear, background 0.2s linear;
       cursor: pointer;
       z-index: auto;

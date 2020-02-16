@@ -189,4 +189,47 @@ export default {
 .popup-leave-active {
   transition: transform 0.3s ease, opacity 0.2s ease 0.1s;
 }
+
+.popup__title {
+  padding: 4px 50px;
+  font-size: 14px;
+  text-align: center;
+  color: #fff;
+  background-color: #E67E22;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.popup__table {
+  table-layout: fixed;
+  border-collapse:collapse;
+  width: 100%;
+}
+.popup__table td,
+.popup__table th {
+  width: 8.6%;
+  text-align: center;
+}
+.popup__table > thead tr {
+  background-color: #34495E33;
+}
+.popup__table > thead::after {
+  content: '';
+  display: block;
+  padding-bottom: 10px;
+}
+.popup__note {
+  display: flex;
+  margin-top: 10px;
+}
+.popup__note > div:first-child {
+  flex: 0 0 35px;
+}
+.popup__note > div:nth-child(2) {
+  flex: 1 1 auto;
+}
+.popup__table th:first-child {
+  width: 12%;
+  margin-right: 10px;
+  text-align: left;
+}
 </style>

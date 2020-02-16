@@ -135,7 +135,7 @@ export default {
   .search {
     position: relative;
     min-width: 320px;
-    max-width: 420px;
+    max-width: 600px;
   }
   .search__bar {
     display: flex;

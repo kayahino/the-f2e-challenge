@@ -15,7 +15,7 @@
       </div>
     </transition>
     <transition name="popup" mode="out-in">
-      <Modal v-if="state.modalOpen && !isMobile" ref="maskInfo">
+      <Modal v-if="state.modalOpen" ref="maskInfo">
         <div slot="modal-content">
           <img src="@/assets/img/howToBuy.png" draggable="false" />
         </div>
@@ -83,6 +83,7 @@ export default {
 
     const closeModal = (e) => {
       if (!state.modalOpen) return false
+      console.log(maskInfo.value)
       if (maskInfo.value.$el.children[0].contains(e.target)) return false
       state.modalOpen = false
     }

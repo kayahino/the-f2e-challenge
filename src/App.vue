@@ -1,11 +1,13 @@
 <template>
   <div id="app">
-    <Header ref="header" @popup="state.popupOpen = true" />
+     <Header ref="header" @popup="state.popupOpen = true" @openModal="state.modalOpen = true" />
     <div class="wrapper">
       <keep-alive>
         <router-view class="container" ref="view" />
       </keep-alive>
-      <Map class="map" />
+      <keep-alive>
+        <Map class="map" v-if="!isMobile" />
+      </keep-alive>
     </div>
     <!-- <Map
       :coords="state.currentCoords"
@@ -17,52 +19,64 @@
         <img src="@/assets/img/howToBuy.png" draggable="false" />
       </div>
     </transition>
-    <div class="footer">
+    <transition name="popup" mode="out-in">
+      <Modal v-if="state.modalOpen && !isMobile" ref="maskInfo">
+        <div slot="modal-content">
+          <img src="@/assets/img/howToBuy.png" draggable="false" />
+        </div>
+      </Modal>
+    </transition>
+    <div class="footer" ref="footer">
       <p>防疫專線 1922 ｜ 口罩資訊 1911</p>
       <p class="copyright">
         Design / PY Design
         <br />Made / Cleo
       </p>
     </div>
-    <TopButton />
+    <!-- <TopButton /> -->
   </div>
 </template>
 
 <script>
-import { reactive, onMounted, computed, ref, onUnmounted } from '@vue/composition-api'
+import { reactive, onMounted, computed, ref, onBeforeUnmount } from '@vue/composition-api'
 import Header from '@/components/Header.vue'
-import Map from '@/components/Map.vue'
-import TopButton from '@/components/TopButton'
+// import Map from '@/components/Map.vue'
+// import TopButton from '@/components/TopButton'
+import Modal from '@/components/Modal'
 export default {
   name: 'app',
   components: {
     Header,
-    Map,
-    TopButton
+    Map: () => import('@/components/Map.vue'),
+    // TopButton,
+    Modal
   },
   setup (props, { root, emit }) {
     onMounted(async () => {
       root.$store.dispatch('getData')
       root.$store.dispatch('checkIfMobile')
       window.addEventListener('resize', resizeHandler)
+      document.body.addEventListener('click', closeModal, true)
       // const headerH = document.querySelector('.header').offsetHeight
       // popup.value.style = `top: ${headerH}px`
       if (isMobile.value) return false
-      setTimeout(() => {
-        const headerDOM = document.querySelector('.header')
-        const footerDOM = document.querySelector('.footer')
-        const containerHeight = window.innerHeight - headerDOM.offsetHeight - footerDOM.offsetHeight
-        document.querySelector('.container').style = `height: ${containerHeight}px; overflow-y: auto;`
-      }, 1000)
+      // setTimeout(() => {
+      //   const headerDOM = document.querySelector('.header')
+      //   const footerDOM = document.querySelector('.footer')
+      //   const containerHeight = window.innerHeight - headerDOM.offsetHeight - footerDOM.offsetHeight
+      //   document.querySelector('.container').style = `height: ${containerHeight}px; overflow-y: auto;`
+      // }, 1000)
     })
 
-    onUnmounted(() => {
+    onBeforeUnmount(() => {
       window.removeEventListener('resize', resizeHandler)
     })
 
     const header = ref(null)
+    const footer = ref(null)
     const popup = ref(null)
     const view = ref(null)
+    const maskInfo = ref(null)
     const menuOpen = computed(() => {
       if (!header.value.state.menuOpen) state.popupOpen = false
       return header.value.state.menuOpen
@@ -73,15 +87,16 @@ export default {
       currentCoords: {},
       isLoaded: false,
       popupOpen: false,
-      isMobile: false
+      isMobile: false,
+      modalOpen: false
     })
 
     const maskData = computed(() => root.$store.state.maskData)
     const isMobile = computed(() => root.$store.state.isMobile)
 
     function resizeHandler () {
-      if (window.innerWidth > 600) state.showMap = true
-      else state.showMap = false
+      if (window.innerWidth < 600) root.$store.commit('SET_IS_MOBILE', true)
+      else root.$store.commit('SET_IS_MOBILE', false)
     }
 
     function getCurrentGeoLocation () {
@@ -119,6 +134,12 @@ export default {
       return (Value * Math.PI) / 180
     }
 
+    const closeModal = (e) => {
+      if (!state.modalOpen) return false
+      if (maskInfo.value.$el.children[0].contains(e.target)) return false
+      state.modalOpen = false
+    }
+
     return {
       state,
       isMobile,
@@ -127,8 +148,10 @@ export default {
       getDistance,
       popup,
       header,
+      footer,
       menuOpen,
-      view
+      view,
+      maskInfo
     }
   }
 }
@@ -202,5 +225,24 @@ export default {
 .slide-enter-active,
 .slide-leave-active {
   transition: transform 0.3s ease, opacity 0.2s ease;
+}
+
+.popup-enter,
+.popup-leave-to {
+  transform: scale(0.1);
+  opacity: 0;
+}
+
+.popup-enter-to,
+.popup-enter-leave {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.popup-enter-active {
+  transition: opacity 0.2s ease, transform 0.3s ease;
+}
+.popup-leave-active {
+  transition: transform 0.3s ease, opacity 0.2s ease 0.1s;
 }
 </style>

@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { computed, ref, onMounted } from '@vue/composition-api'
+import { computed, ref, onMounted, onBeforeUnmount } from '@vue/composition-api'
 import getDistance from '@/utils/getDistance.js'
 export default {
   props: {
@@ -43,6 +43,9 @@ export default {
   },
   setup (props, { root, emit }) {
     onMounted(() => {
+    })
+    onBeforeUnmount(() => {
+      distance.value = null
     })
     const isMobile = computed(() => root.$store.state.isMobile)
     const location = computed(() => root.$store.state.location)

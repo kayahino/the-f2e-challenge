@@ -1,7 +1,7 @@
 <template>
   <transition name="fade">
     <div
-      :class="['to-top', state.isPin ? '' : 'sticky']"
+      :class="['to-top', state.isPin ? '' : 'sticky', isMobile ? '' : 'pc']"
       @click="scrollToTop"
       v-if="state.isShow"
     >
@@ -11,26 +11,40 @@
 </template>
 
 <script>
-import { reactive, onMounted, onBeforeUnmount, computed } from '@vue/composition-api'
+import { reactive, onMounted, onBeforeUnmount, computed, watch } from '@vue/composition-api'
+let scrollTarget = null
 export default {
   setup (props, context) {
     onMounted(() => {
+      scrollTarget = isMobile.value ? window : context.parent.$el
       pinButton()
-      window.addEventListener('scroll', scrollHandler)
     })
     onBeforeUnmount(() => {
-      window.removeEventListener('scroll', scrollHandler)
+      scrollTarget.removeEventListener('scroll', scrollHandler)
     })
 
     const state = reactive({
-      isPin: false,
-      isShow: false
+      isPin: true,
+      isShow: false,
+      styleFix: ''
     })
 
     const isMobile = computed(() => context.root.$store.state.isMobile)
+    const frameWidth = computed(() => context.parent.frame.offsetWidth - 46 - 30)
+
+    watch(() => {
+      scrollTarget.removeEventListener('scroll', scrollHandler)
+      if (isMobile.value) {
+        scrollTarget = window
+      } else {
+        scrollTarget = context.parent.$el
+      }
+      scrollTarget.addEventListener('scroll', scrollHandler)
+    })
 
     function scrollHandler () {
-      if (window.pageYOffset > 100) {
+      const scroll = isMobile.value ? window.pageYOffset : context.parent.$el.scrollTop
+      if (scroll > 100) {
         state.isShow = true
       } else {
         state.isShow = false
@@ -39,6 +53,7 @@ export default {
     }
 
     function pinButton () {
+      if (!isMobile.value) return false
       const footer = document.querySelector('.footer')
       const footerHeight = footer ? footer.offsetHeight : 0
       const scroll = window.pageYOffset
@@ -50,17 +65,18 @@ export default {
     }
 
     function scrollToTop () {
-      const currentScroll = window.pageYOffset
+      const currentScroll = isMobile.value ? window.pageYOffset : context.parent.$el.scrollTop
       const smoothness = 8
       const val = currentScroll - (currentScroll / smoothness)
-      window.scrollTo(0, val)
+      scrollTarget.scrollTo(0, val)
       if (currentScroll > 0) requestAnimationFrame(scrollToTop)
     }
 
     return {
       state,
       scrollToTop,
-      isMobile
+      isMobile,
+      frameWidth
     }
   }
 }
@@ -88,6 +104,11 @@ export default {
       position: absolute;
       bottom: 40px;
       right: 30px;
+    }
+
+    &.pc {
+      background-color: #FFFFFF;
+      color: #34405E;
     }
   }
 

@@ -51,10 +51,8 @@ export default {
       })
       geocoder = new google.maps.Geocoder()
       history.value = JSON.parse(localStorage.getItem('searchHistory')) || []
-      console.log('search mounted')
     })
     onUnmounted(() => {
-      console.log('search unmounted')
     })
     const coords = computed(() => context.root.$store.state.location)
     const address = ref(null)
@@ -66,7 +64,7 @@ export default {
     })
 
     async function search () {
-      if (!address.value.length) return false
+      if (!address.value) return false
       if (history.value.length > 4) await removeItem(history.value)
       if (!state.isPasted) {
         history.value.push(address.value)
@@ -110,7 +108,6 @@ export default {
     }
 
     function cancel () {
-      console.log('cancel')
       address.value = ''
     }
 
@@ -181,7 +178,7 @@ export default {
       appearance: none;
       width: calc(100% - 25px);
       height: 44px;
-      padding: 0 10px;
+      padding: 0 40px 0 10px;
       color: #34495E;
       border: 1px solid #34495E33;
       border-radius: 10px;
@@ -191,7 +188,7 @@ export default {
     .cancel-icon {
       position: absolute;
       top: 50%;
-      right: 40px;
+      right: 35px;
       width: 24px;
       height: 24px;
       text-align: center;

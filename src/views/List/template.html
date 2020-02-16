@@ -1,0 +1,58 @@
+<div
+  class="list-page"
+  ref="frame"
+  :style="isMobile ? '' : { 'height': `${frameHeight}px`, 'overflow-y': 'auto' }"
+>
+  <div 
+    class="location-bar"
+    :class="['location-bar', isLoading ? 'disabled' : '']"
+    @click="$router.push({ name: 'search' })"
+  >
+    <p class="location" v-if="!userStatus">請選擇欲查找的區域</p>
+    <p class="location" v-else-if="userStatus === 'LOCATE_BY_LATLNG'">目前位置</p>
+    <p class="location" v-else>{{ userStatus }}</p>
+    <div class="locate-btn">
+      <img src="@/assets/img/ic_location.png" draggable="false">
+    </div>
+  </div>
+  <div class="content">
+    <div class="status"><span>{{ state.status }}</span> 購買日</div>
+    <div class="help">
+      <div class="icon">?</div>
+      <div class="tooltip">
+        身分證末一碼為 {{ state.status === '雙數' ? '奇數或偶數' : state.status }}<br />
+        可以在此天購買口罩
+      </div>
+    </div>
+  </div>
+  <div class="info">
+   <div>
+     距離方圓 1 公里 以內的供應商 <br />
+     資訊更新時間 {{ lastUpdatedTime }}
+   </div>
+   <div class="refresh">
+     <div :class="['btn', dataFiltered ? '' : 'disabled']" @click="getData">
+       重整列表
+     </div>
+   </div>
+ </div>
+ <div class="loading" v-if="isLoading">
+   <p v-if="!errMsg">Loading...</p>
+   <p v-else>{{ errMsg }}</p>
+ </div>
+ <div class="mask-list" v-else>
+  <div class="filter">
+    <div class="filter-icon"><i class="fas fa-sort-amount-down-alt"></i></div>
+    <div :class="['filter-btn', state.sort === 'distance' ? 'active' : '']" @click="state.sort = 'distance'">依距離</div>
+    <div :class="['filter-btn', state.sort === 'stock' ? 'active' : '']" @click="state.sort = 'stock'">依成人口罩數目</div>
+  </div>
+  <div v-for="item in dataFiltered" :key="item.properties.id">
+    <ListCard :item="item" @showPosition="showPosition" />
+  </div>
+  <div class="see-more" v-if="state.isMore">
+    <p>尚有 {{ state.remained }} 筆</p>
+    <div class="btn" @click="seeMore">查看更多</div>
+  </div>
+ </div>
+ <TopButton />
+</div>

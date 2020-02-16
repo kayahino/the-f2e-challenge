@@ -30,23 +30,29 @@
      </div>
    </div>
    <div class="loading" v-if="isLoading">
-     Loading...
+     <p v-if="!errMsg">Loading...</p>
+     <p v-else>{{ errMsg }}</p>
    </div>
    <div class="mask-list" v-else>
-     <div v-for="item in dataFiltered" :key="item.properties.id">
-       <ListCard :item="item" @showPosition="showPosition" />
-     </div>
-     <div class="see-more" v-if="state.isMore">
-       <p>尚有 {{ state.remained }} 筆</p>
-       <div class="btn" @click="seeMore">查看更多</div>
-     </div>
+    <div class="filter">
+      <div class="filter-icon"><i class="fas fa-sort-amount-down-alt"></i></div>
+      <div :class="['filter-btn', state.sort === 'distance' ? 'active' : '']" @click="state.sort = 'distance'">依距離</div>
+      <div :class="['filter-btn', state.sort === 'stock' ? 'active' : '']" @click="state.sort = 'stock'">依成人口罩數目</div>
+    </div>
+    <div v-for="item in dataFiltered" :key="item.properties.id">
+      <ListCard :item="item" @showPosition="showPosition" />
+    </div>
+    <div class="see-more" v-if="state.isMore">
+      <p>尚有 {{ state.remained }} 筆</p>
+      <div class="btn" @click="seeMore">查看更多</div>
+    </div>
    </div>
    <!-- <TopButton /> -->
   </div>
 </template>
 
 <script>
-import { reactive, onMounted, computed, watch, ref, onBeforeUnmount } from '@vue/composition-api'
+import { reactive, onMounted, computed, watch, onBeforeUnmount, ref } from '@vue/composition-api'
 import getDistance from '@/utils/getDistance.js'
 import { mapActions } from 'vuex'
 import { EventBus } from '@/utils/event-bus.js'
@@ -68,37 +74,53 @@ export default {
     const state = reactive({
       status: '雙數',
       page: 1,
-      max: 10,
+      max: 20,
       range: 2,
       isMore: false,
-      remained: 0
+      sort: 'distance',
+      remained: 0,
+      modalOpen: false
     })
 
     const maskData = computed(() => root.$store.state.maskData)
     const location = computed(() => root.$store.state.location)
     const isLoading = computed(() => root.$store.state.isLoading)
+    const errMsg = computed(() => root.$store.state.errMsg)
     const lastUpdatedTime = computed(() => root.$store.state.lastUpdated)
     const userStatus = computed(() => root.$store.state.status)
     // const dataCache = computed(() => root.$store.state.dataCache)
-    const dataFiltered = ref(null)
+    const dataFiltered = computed(() => {
+      return pageController(dataSorted.value, state.range, state.page)
+    })
+
+    const dataSorted = computed(() => {
+      return sortData(areaData.value, state.sort)
+    })
+
+    const areaData = ref(null)
     watch(location, (prev, next) => {
-      console.log('location changed')
       if (location.value.latitude) {
+        console.log('change')
         state.page = 1
-        dataFiltered.value = filter(state.range, state.page)
+        areaData.value = filter(state.range, state.page)
       }
     })
 
     function filter (range, page) {
+      if (!maskData.value.features) return false
       const filteredAll = maskData.value.features.filter(el => {
         const { longitude, latitude } = location.value
         return getDistance(latitude, longitude, el.geometry.coordinates[1], el.geometry.coordinates[0]) <= range
       })
-      const dataSorted = sortData(filteredAll, 'distance')
-      const filteredByPage = dataSorted.slice(0, page * state.max)
-      if (filteredByPage.length < filteredAll.length) {
+      return filteredAll
+    }
+
+    const pageController = (data, range, page) => {
+      if (!data) return false
+      const filteredByPage = data.slice(0, page * state.max)
+      if (filteredByPage.length < data.length) {
         state.isMore = true
-        state.remained = filteredAll.length - filteredByPage.length
+        state.remained = data.length - filteredByPage.length
       } else {
         state.isMore = false
         state.remained = 0
@@ -111,8 +133,10 @@ export default {
         distance: sortByDistance,
         stock: sortByStock
       }
-      const [...newData] = rawData
-      return sortPattern[pattern](newData)
+      if (!rawData) return false
+      // const [...newData] = rawData
+      // return sortPattern[pattern](newData)
+      return sortPattern[pattern](rawData)
     }
 
     function sortByStock (data) {
@@ -132,7 +156,7 @@ export default {
 
     function seeMore () {
       state.page += 1
-      dataFiltered.value = filter(state.range, state.page)
+      // dataFiltered.value = filter(state.range, state.page)
     }
 
     // function toSearchPage () {
@@ -158,6 +182,7 @@ export default {
       dataFiltered,
       lastUpdatedTime,
       isLoading,
+      errMsg,
       seeMore,
       showPosition
     }
@@ -171,157 +196,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-  .list-page {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    min-width: 320px;
-    max-width: 420px;
-    padding: 20px;
-
-    // @media only screen and (min-height: 600px) {
-    //   max-height: calc(100vh - 60px - 103px);
-    //   overflow-y: auto;
-    // }
-  }
-  .loading {
-    flex: 1 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .location-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 11px 15px;
-    border: 1px solid #34495E33;
-    border-radius: 10px;
-    background-color: #fff;
-    cursor: pointer;
-  }
-
-  .location {
-    margin: 0;
-  }
-  .locate-btn {
-    width: 24px;
-    height: 24px;
-    > img {
-      max-width: 100%;
-      height: auto;
-    }
-  }
-
-  .content {
-    display: flex;
-    align-items: baseline;
-    margin-top: 24px;
-    padding: 0 10px;
-    line-height: 1.7;
-
-    .status {
-      flex: 1 0 auto;
-      > span {
-        font-size: 36px;
-        font-weight: bold;
-      }
-    }
-
-    .help {
-      position: relative;
-      width: 100%;
-      margin-left: 5px;
-
-      .icon {
-        width: 24px;
-        height: 24px;
-        background-color: rgba(#566778, 0.3);
-        color: #fafafa;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 24px;
-        font-weight: bold;
-        cursor: pointer;
-
-        &:hover ~ .tooltip, &:active ~ .tooltip {
-          display: block;
-        }
-      }
-
-      .tooltip {
-        position: absolute;
-        top: 50%;
-        left: 35px;
-        padding: 10px 15px;
-        font-size: 12px;
-        background-color: rgba(#566778, 0.2);
-        transform: translateY(-50%);
-        display: none;
-        z-index: 50;
-      }
-    }
-  }
-
-  .info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 25px;
-    margin-bottom: 20px;
-    padding-left: 10px;
-    line-height: 1.8;
-    font-size: 12px;
-    color: #566778;
-  }
-
-  .refresh {
-    cursor: pointer;
-    .btn {
-      padding: 5px 20px;
-      color: #34495E;
-      font-size: 14px;
-      border: 2px solid #34495E;
-      border-radius: 100px;
-      transition: all 0.2s ease;
-
-      &:hover {
-        color: #fff;
-        background-color: #34495E;
-      }
-
-      &.disabled {
-        opacity: 0.4;
-        pointer-events: none;
-      }
-    }
-  }
-
-  .mask-list {
-    margin-bottom: 80px;
-  }
-
-  .see-more {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: -60px;
-    font-size: 12px;
-    color: #34495E;
-
-    .btn {
-      margin-top: 10px;
-      padding: 14px 45px;
-      color: #fafafa;
-      font-size: 14px;
-      letter-spacing: 0.75px;
-      background-color: #34495E;
-      box-shadow: 0 10px 20px #34495E4D;
-      border-radius: 100px;
-      cursor: pointer;
-    }
-  }
-</style>

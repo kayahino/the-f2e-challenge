@@ -11,7 +11,7 @@ const routes = [{
 {
   name: 'list',
   path: '/list',
-  component: () => import('@/views/List.vue'),
+  component: () => import('@/views/List'),
   meta: {
     keepAlive: true
   }
@@ -23,15 +23,15 @@ const routes = [{
   meta: {
     keepAlive: false
   }
-},
-{
-  name: 'map',
-  path: '/map',
-  component: () => import('@/views/Map.vue'),
-  meta: {
-    keepAlive: false
-  }
 }
+// {
+//   name: 'map',
+//   path: '/map',
+//   component: () => import('@/views/Map.vue'),
+//   meta: {
+//     keepAlive: false
+//   }
+// }
 ]
 
 const router = new VueRouter({

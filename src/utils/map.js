@@ -22,8 +22,9 @@ const locationIcon = $L.icon({
 
 // const markers = []
 
-const createMap = (divId, options) => {
+const createMap = (divId, options, data) => {
   let map = $L.map(divId, options)
+  pinMark(map, data)
   return map
 }
 

@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { onMounted, reactive, computed, watch } from '@vue/composition-api'
+import { onMounted, reactive, computed, watch, onBeforeUnmount } from '@vue/composition-api'
 import { EventBus } from '@/utils/event-bus.js'
 let map = null
 let marker = null
@@ -23,6 +23,10 @@ export default {
       })
     })
 
+    onBeforeUnmount(() => {
+      console.log('map unmount')
+    })
+
     const state = reactive({
       rangeCircle: null
     })
@@ -36,23 +40,22 @@ export default {
         zoom: zoom,
         minZoom: 8,
         maxZoom: 16
-      })
+      }, maskData.value)
       const baseLayer = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
       root.$utils.map.createTileLayer(map, baseLayer, {
         minZoom: 8,
         maxZoom: 18
       })
-      // map.setView(, zoom)
-      // showRange()
     }
 
     watch(coords, async (prev, next) => {
       if (map && coords.value.latitude) {
         const { latitude, longitude } = coords.value
-        root.$utils.map.pinMark(map, maskData.value)
+        console.log('map location')
         flyToCurrentPos()
         if (!marker) {
           marker = root.$utils.map.setPosMarker(map, coords.value)
+          root.$utils.map.pinMark(map, maskData.value)
         } else {
           marker.setLatLng({ lat: latitude, lng: longitude })
         }
@@ -65,11 +68,11 @@ export default {
         // const oCoords = Object.values(map.getCenter())
         // const nCoords = [latitude, longitude]
         // map.fitBounds([oCoords, nCoords], {
-        //   paddingBottomRight: [80, 80],
+        //   paddingBottomRight: [80, 160],
         //   maxZoom: 16
         // })
+        map.closePopup()
         map.setView({ lng: longitude, lat: latitude }, 15)
-        // state.rangeCircle.setLatLng({ lat: latitude, lng: longitude })
       } else {
         createMap(latitude, longitude, 15)
       }
@@ -79,12 +82,6 @@ export default {
       map.flyTo(latlng)
       marker.openPopup()
     }
-
-    // function showRange () {
-    //   console.log(props.coords)
-    //   const { latitude, longitude } = props.coords
-    //   state.rangeCircle = root.$utils.map.showDistanceRange(map, { lat: latitude, lng: longitude })
-    // }
 
     return {
       state,

@@ -14,7 +14,7 @@
     </div>
     <div class="header__menu">
       <router-link :to="{ name: 'index' }" class="link active">口罩供給現況</router-link>
-      <a href="#" class="link" @click.prevent="$emit('popup')">口罩怎麼買</a>
+      <a href="#" class="link" @click.prevent="$emit('openModal')">口罩怎麼買</a>
     </div>
   </div>
 </template>
@@ -127,7 +127,7 @@ export default {
         border-radius: 4px 4px 0 0;
         display: none;
       }
-      &.active::after {
+      &.router-link-active::after {
         display: block;
       }
     }

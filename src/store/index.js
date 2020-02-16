@@ -14,24 +14,39 @@ export default new Vuex.Store({
     // selectedPoint: null,
     lastUpdated: '',
     isLoading: false,
+    errMsg: null,
     status: null
   },
   getters: {
     getMaskData: (state) => state.maskData
   },
   actions: {
-    getData: ({
+    getData: async ({
       commit
     }, payload) => {
       const url = 'https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json'
       commit('SET_LOADING', true)
-      axios.get(url).then((res) => {
+      try {
+        const res = await axios.get(url)
         const d = new Date()
         const time = `${d.getHours()}:${d.getMinutes()}:${d.getMilliseconds()}`
-        commit('GET_MASKDATA', res.data)
+        const data = Object.freeze(res.data)
+        commit('GET_MASKDATA', data)
         commit('UPDATE_TIME', time)
         commit('SET_LOADING', false)
-      })
+      } catch {
+        setTimeout(() => {
+          commit('SET_ERR_MSG', 'Failed to get data.')
+        }, 1000)
+      }
+
+      // axios.get(url).then((res) => {
+      //   const d = new Date()
+      //   const time = `${d.getHours()}:${d.getMinutes()}:${d.getMilliseconds()}`
+      //   commit('GET_MASKDATA', res.data)
+      //   commit('UPDATE_TIME', time)
+      //   commit('SET_LOADING', false)
+      // })
     },
 
     getLocation: async ({ commit }, payload) => {
@@ -79,6 +94,9 @@ export default new Vuex.Store({
     },
     SET_IS_MOBILE: (state, payload) => {
       state.isMobile = payload
+    },
+    SET_ERR_MSG: (state, payload) => {
+      state.errMsg = payload
     }
     // SET_POINT_MARKER: (state, payload) => {
     //   state.selectedPoint = payload

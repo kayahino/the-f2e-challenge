@@ -15,9 +15,9 @@
         <div class="cancel-icon" @click="cancel" v-if="address">
           <i class="fas fa-times"></i>
         </div>
-        <div class="locate-icon" @click="search">
-          <i class="fas fa-map-marker-alt"></i>
-        </div>
+      </div>
+      <div class="locate-icon" @click="search">
+        <i class="fas fa-map-marker-alt"></i>
       </div>
     </div>
     <div class="search__history">
@@ -140,14 +140,15 @@ export default {
   .search__bar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 20px;
 
     .back {
       position: relative;
       width: 28px;
+      min-width: 28px; // safari
       height: 44px;
-      font-size: 28px;
-      margin-right: 10px;
+      // margin-right: 10px;
       cursor: pointer;
       > a {
         color: #70777C;
@@ -173,22 +174,25 @@ export default {
   }
   .input-area {
     position: relative;
-    flex: 1 0 auto;
+    // flex: 1 0 content;
+    // width: 100%;
     .input {
       appearance: none;
-      width: calc(100% - 25px);
+      // width: calc(100% - 25px);
+      width: 100%;
       height: 44px;
       padding: 0 40px 0 10px;
       color: #34495E;
       border: 1px solid #34495E33;
       border-radius: 10px;
       outline: none;
+      line-height: normal;
     }
 
     .cancel-icon {
       position: absolute;
       top: 50%;
-      right: 35px;
+      right: 10px;
       width: 24px;
       height: 24px;
       text-align: center;
@@ -201,15 +205,19 @@ export default {
       opacity: 0.7;
       cursor: pointer;
     }
-    .locate-icon {
-      position: absolute;
-      top: 50%;
-      left: calc(100% - 12px);
-      font-size: 24px;
-      color: #566778;
-      transform: translateY(-50%);
-      cursor: pointer;
-    }
+  }
+  .locate-icon {
+    // position: absolute;
+    // top: 50%;
+    // left: calc(100% - 12px);
+    margin-left: 15px;
+    font-size: 24px;
+    color: #566778;
+    // transform: translateY(-50%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .history__header {
     display: flex;

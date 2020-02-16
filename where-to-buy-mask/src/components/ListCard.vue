@@ -112,17 +112,17 @@ export default {
       background-position: 102% 80%;
 
       &.green {
-        background-image: url('/ic_stock_full.png');
+        background-image: url('~@/assets/img/ic_stock_full.png');
         background-color: #11787A;
       }
 
       &.orange {
-        background-image: url('/ic_stock_few.png');
+        background-image: url('~@/assets/img/ic_stock_few.png');
         background-color: #E67E22;
       }
 
       &.gray {
-        background-image: url('/ic_stock_none.png');
+        background-image: url('~@/assets/img/ic_stock_none.png');
         background-color: #70777C;
         opacity: 0.3;
       }

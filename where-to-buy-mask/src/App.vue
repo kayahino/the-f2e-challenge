@@ -83,7 +83,6 @@ export default {
 
     const closeModal = (e) => {
       if (!state.modalOpen) return false
-      console.log(maskInfo.value)
       if (maskInfo.value.$el.children[0].contains(e.target)) return false
       state.modalOpen = false
     }

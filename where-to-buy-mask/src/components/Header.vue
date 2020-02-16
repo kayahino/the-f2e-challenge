@@ -70,7 +70,7 @@ export default {
 <style lang="scss" scoped>
   .header {
     position: relative;
-    z-index: 100;
+    z-index: 1001;
 
     > .wrap {
       position: relative;

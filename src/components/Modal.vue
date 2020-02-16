@@ -25,9 +25,6 @@ export default {
     z-index: 1000;
   }
   .modal__wrap {
-    // max-width: 500px;
-    // width: 70%;
-    // height: 50%;
     padding: 20px;
     background-color: #fff;
     box-shadow: 0 5px 10px rgba(#000, 0.3);

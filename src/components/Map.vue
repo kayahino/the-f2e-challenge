@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { onMounted, reactive, computed, watch, onBeforeUnmount } from '@vue/composition-api'
+import { onMounted, computed, watch, onBeforeUnmount } from '@vue/composition-api'
 import { EventBus } from '@/utils/event-bus.js'
 let map = null
 let marker = null
@@ -24,11 +24,7 @@ export default {
     })
 
     onBeforeUnmount(() => {
-      console.log('map unmount')
-    })
-
-    const state = reactive({
-      rangeCircle: null
+      EventBus.$off('showPos')
     })
 
     const maskData = computed(() => root.$store.state.maskData)
@@ -51,7 +47,6 @@ export default {
     watch(coords, async (prev, next) => {
       if (map && coords.value.latitude) {
         const { latitude, longitude } = coords.value
-        console.log('map location')
         flyToCurrentPos()
         if (!marker) {
           marker = root.$utils.map.setPosMarker(map, coords.value)
@@ -81,14 +76,6 @@ export default {
     function focusPoint (latlng, marker) {
       map.flyTo(latlng)
       marker.openPopup()
-    }
-
-    return {
-      state,
-      coords,
-      maskData,
-      flyToCurrentPos,
-      focusPoint
     }
   }
 }

@@ -3,17 +3,12 @@
      <Header ref="header" @popup="state.popupOpen = true" @openModal="state.modalOpen = true" />
     <div class="wrapper">
       <keep-alive>
-        <router-view class="container" ref="view" />
+        <router-view class="container" />
       </keep-alive>
       <keep-alive>
         <Map class="map" v-if="!isMobile" />
       </keep-alive>
     </div>
-    <!-- <Map
-      :coords="state.currentCoords"
-      :maskData="state.maskData"
-      v-if="state.tab === 'map' && state.isLoaded"
-    />-->
     <transition name="slide" mode="out-in">
       <div class="howToBuy" ref="popup" v-if="state.popupOpen && menuOpen">
         <img src="@/assets/img/howToBuy.png" draggable="false" />
@@ -33,22 +28,19 @@
         <br />Made / Cleo
       </p>
     </div>
-    <!-- <TopButton /> -->
   </div>
 </template>
 
 <script>
 import { reactive, onMounted, computed, ref, onBeforeUnmount } from '@vue/composition-api'
 import Header from '@/components/Header.vue'
-// import Map from '@/components/Map.vue'
-// import TopButton from '@/components/TopButton'
 import Modal from '@/components/Modal'
+import { EventBus } from '@/utils/event-bus.js'
 export default {
   name: 'app',
   components: {
     Header,
     Map: () => import('@/components/Map.vue'),
-    // TopButton,
     Modal
   },
   setup (props, { root, emit }) {
@@ -57,25 +49,17 @@ export default {
       root.$store.dispatch('checkIfMobile')
       window.addEventListener('resize', resizeHandler)
       document.body.addEventListener('click', closeModal, true)
-      // const headerH = document.querySelector('.header').offsetHeight
-      // popup.value.style = `top: ${headerH}px`
-      if (isMobile.value) return false
-      // setTimeout(() => {
-      //   const headerDOM = document.querySelector('.header')
-      //   const footerDOM = document.querySelector('.footer')
-      //   const containerHeight = window.innerHeight - headerDOM.offsetHeight - footerDOM.offsetHeight
-      //   document.querySelector('.container').style = `height: ${containerHeight}px; overflow-y: auto;`
-      // }, 1000)
     })
 
     onBeforeUnmount(() => {
       window.removeEventListener('resize', resizeHandler)
+      document.body.removeEventListener('click', closeModal)
+      EventBus.$off()
     })
 
     const header = ref(null)
     const footer = ref(null)
     const popup = ref(null)
-    const view = ref(null)
     const maskInfo = ref(null)
     const menuOpen = computed(() => {
       if (!header.value.state.menuOpen) state.popupOpen = false
@@ -90,48 +74,11 @@ export default {
       isMobile: false,
       modalOpen: false
     })
-
-    const maskData = computed(() => root.$store.state.maskData)
     const isMobile = computed(() => root.$store.state.isMobile)
 
     function resizeHandler () {
       if (window.innerWidth < 600) root.$store.commit('SET_IS_MOBILE', true)
       else root.$store.commit('SET_IS_MOBILE', false)
-    }
-
-    function getCurrentGeoLocation () {
-      return new Promise((resolve, reject) => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            pos => {
-              resolve(pos.coords)
-            },
-            err => {
-              console.warn(`ERROR ${err.code}: ${err.message}`)
-              reject(err)
-            }
-          )
-        }
-      })
-    }
-
-    function getDistance (oLat, oLon, nLat, nLon) {
-      const R = 6371 // km
-      const dLat = toRad(nLat - oLat)
-      const dLon = toRad(nLon - nLon)
-      const lat1 = toRad(oLat)
-      const lat2 = toRad(nLat)
-
-      var a =
-        Math.pow(Math.sin(dLat / 2), 2) +
-        Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dLon / 2), 2)
-      var c = 2 * Math.asin(Math.sqrt(a))
-      return c * R
-    }
-
-    // Converts numeric degrees to radians
-    function toRad (Value) {
-      return (Value * Math.PI) / 180
     }
 
     const closeModal = (e) => {
@@ -143,14 +90,10 @@ export default {
     return {
       state,
       isMobile,
-      maskData,
-      getCurrentGeoLocation,
-      getDistance,
       popup,
       header,
       footer,
       menuOpen,
-      view,
       maskInfo
     }
   }

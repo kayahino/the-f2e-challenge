@@ -63,7 +63,6 @@ export default {
     }
 
     return {
-      getDistance,
       location,
       isMobile,
       distance,

@@ -14,13 +14,10 @@ const geojsonMarkerOptions = {
 
 const locationIcon = $L.icon({
   iconUrl: icon,
-  // shadowUrl: 'leaf-shadow.png',
-  iconSize: [40, 40], // size of the icon
-  iconAnchor: [20, 40], // point of the icon which will correspond to marker's location
-  popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+  popupAnchor: [-3, -76]
 })
-
-// const markers = []
 
 const createMap = (divId, options, data) => {
   let map = $L.map(divId, options)
@@ -35,28 +32,25 @@ const createTileLayer = async (map, url, options) => {
 }
 
 const pinMark = (map, data) => {
-  return new Promise((resolve, reject) => {
-    $L
-      .geoJSON(data, {
-        pointToLayer: (feature, latlng) => {
-          return $L.circleMarker(latlng, geojsonMarkerOptions)
-        },
-        onEachFeature: (feature, layer) => {
-          const tableData = convert.convert(feature.properties.available)
-          const template = convert.tableTemplate(tableData)
-          layer.bindPopup(`
-          <h3 class="popup__title">${feature.properties.name}</h3>
-          ${template}
-          <div class="popup__note">
-            <div>備註</div><div>${feature.properties.note.length === 0 ? '無' : feature.properties.note}</div>
-          </div>
-        `)
-          layer.storeID = feature.properties.id
-        }
-      })
-      .addTo(map)
-    resolve()
-  })
+  $L
+    .geoJSON(data, {
+      pointToLayer: (feature, latlng) => {
+        return $L.circleMarker(latlng, geojsonMarkerOptions)
+      },
+      onEachFeature: (feature, layer) => {
+        const tableData = convert.convert(feature.properties.available)
+        const template = convert.tableTemplate(tableData)
+        layer.bindPopup(`
+        <h3 class="popup__title">${feature.properties.name}</h3>
+        ${template}
+        <div class="popup__note">
+          <div>備註</div><div>${feature.properties.note.length === 0 ? '無' : feature.properties.note}</div>
+        </div>
+      `)
+        layer.storeID = feature.properties.id
+      }
+    })
+    .addTo(map)
 }
 const showDistanceRange = (map, latlng) => {
   const circle = $L.circleMarker(latlng, {
@@ -72,30 +66,6 @@ const setPosMarker = (map, latlng) => {
   const marker = $L.marker({ lat: latlng.latitude, lng: latlng.longitude }, { icon: locationIcon }).addTo(map)
   return marker
 }
-
-// const getBounds = (c1, c2) => {
-//   return $L.latLngBounds(c1, c2)
-// }
-
-// function dataToTable (dataString) {
-//   const dataAry = dataString.split('、')
-//   const dataTable = {
-//     morning: [],
-//     afternoon: [],
-//     evening: []
-//   }
-//   dataAry.forEach(el => {
-//     if (el.includes('上午')) {
-//       dataTable.morning.push(el.split('上午')[0])
-//     } else if (el.includes('下午')) {
-//       dataTable.afternoon.push(el.split('下午')[0])
-//     } else {
-//       dataTable.evening.push(el.split('晚上')[0])
-//     }
-//   })
-
-//   return dataTable
-// }
 
 export default {
   createMap,

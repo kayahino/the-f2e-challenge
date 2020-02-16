@@ -30,7 +30,6 @@ export default {
     })
 
     const isMobile = computed(() => context.root.$store.state.isMobile)
-    const frameWidth = computed(() => context.parent.frame.offsetWidth - 46 - 30)
 
     watch(() => {
       scrollTarget.removeEventListener('scroll', scrollHandler)
@@ -75,8 +74,7 @@ export default {
     return {
       state,
       scrollToTop,
-      isMobile,
-      frameWidth
+      isMobile
     }
   }
 }

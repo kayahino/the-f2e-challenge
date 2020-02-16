@@ -1,6 +1,5 @@
 <div
   class="list-page"
-  ref="frame"
   :style="isMobile ? '' : { 'height': `${frameHeight}px`, 'overflow-y': 'auto' }"
 >
   <div 
@@ -51,7 +50,7 @@
   </div>
   <div class="see-more" v-if="state.isMore">
     <p>尚有 {{ state.remained }} 筆</p>
-    <div class="btn" @click="seeMore">查看更多</div>
+    <div class="btn" @click="state.page += 1">查看更多</div>
   </div>
  </div>
  <TopButton />

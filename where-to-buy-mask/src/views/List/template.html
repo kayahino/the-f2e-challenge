@@ -36,7 +36,11 @@
    </div>
  </div>
  <div class="loading" v-if="isLoading">
-   <p v-if="!errMsg">Loading...</p>
+   <div v-if="!errMsg">
+    <div class="spinner">
+      <span v-for="i in 10" :class="['dot', `dot:${i}`]"></span>
+    </div>
+   </div>
    <p v-else>{{ errMsg }}</p>
  </div>
  <div class="mask-list" v-else>

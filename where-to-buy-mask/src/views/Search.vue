@@ -148,7 +148,7 @@ export default {
       width: 28px;
       min-width: 28px; // safari
       height: 44px;
-      // margin-right: 10px;
+      margin-right: 10px;
       cursor: pointer;
       > a {
         color: #70777C;
@@ -174,8 +174,8 @@ export default {
   }
   .input-area {
     position: relative;
-    // flex: 1 0 content;
-    // width: 100%;
+    // flex: 1 0 auto;
+    width: 100%;
     .input {
       appearance: none;
       // width: calc(100% - 25px);

@@ -180,3 +180,58 @@
   opacity: 0.4;
   pointer-events: none;
 }
+
+
+.spinner {
+  position: relative;
+  >span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 10px;
+    height: calc(10px + 10px + 30px);
+    display: block;
+    
+    &::after {
+      content: '';
+      display: block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #34495E;
+    }
+  }
+}
+
+@function getSpace ($i, $num: 10) {
+  @return ceil(360 / $num * $i);
+}
+
+@for $i from 1 through 10 {
+  $space: getSpace($i, 10);
+  .dot\:#{$i} {
+    --rotate: #{$space}deg;
+    transform: rotate(var(--rotate));
+    
+    &::after {
+      
+      animation: scale 0.5s ease infinite alternate;
+      animation-fill-mode: both;
+      animation-delay: #{-0.1 * ($i - 1)}s;
+    }
+  }
+}
+
+@keyframes scale {
+  0%{
+    opacity: 0.5;
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
